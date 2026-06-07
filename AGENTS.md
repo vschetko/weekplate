@@ -41,3 +41,5 @@ No commit convention established in history yet. Use Conventional Commits prefix
 ## Deployment
 
 Railway (Nixpacks auto-build; `railway.toml` provides explicit fallback). Build target: `CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/server`. Railway injects `PORT` and `DATABASE_URL` automatically. See @context/foundation/infrastructure.md for platform decision and risk register.
+
+**CLI install (Windows):** `npm install -g @railway/cli` — the `winget` package `Railway.RailwayCLI` does not exist. Node.js 16+ required.
