@@ -62,7 +62,7 @@ Render offers native Go support, managed Postgres, and a genuinely simple UI. Th
 2. **No SLA on Hobby — reliability is best-effort.** Railway has experienced platform incidents in 2024–2025. For a meal-planning app peaking on weekend mornings, an unannounced Saturday incident means missing the only high-value usage window. No recourse without upgrading to Pro ($20/month).
 3. **Nixpacks can produce non-obvious build failures.** Non-standard `go.mod` layouts, CGO dependencies, or custom build tags can cause silent failures or binaries that compile but can't connect to `DATABASE_URL` correctly. The fallback is adding a Dockerfile — but this defeats the main DX advantage.
 4. **Only 4 regions.** US-West, US-East, EU-West (Amsterdam), Asia-Pacific. If target users are in Central Europe or other underserved regions, latency may be higher than expected.
-5. **Railway CLI requires Node.js on Windows.** The `railway` CLI is an npm package. On the user's Windows environment, a standalone binary installer exists but is less prominently documented than `npm install -g @railway/cli`.
+5. **Railway CLI requires Node.js on Windows.** The `railway` CLI is an npm package (`npm install -g @railway/cli`). The `winget` package `Railway.RailwayCLI` does not exist — attempting `winget install Railway.RailwayCLI` silently fails to install anything. Node.js 16+ must be present before running the npm install.
 
 ### Pre-Mortem — How This Could Fail
 
@@ -80,7 +80,7 @@ The root assumption was that Railway's "it just works" positioning would hold un
 - **Nixpacks cache invalidates on `go.mod` changes.** Every dependency update triggers a full module download (3–5 min first build). Predictable but surprising if you expect Docker-layer-style caching.
 - **Remote MCP requires browser OAuth for initial auth.** The hosted `mcp.railway.com` endpoint needs a browser-based OAuth flow. In a CI or headless environment, the local CLI-based MCP (`railway mcp`) must be used instead. The docs don't prominently surface this distinction.
 - **Railway volumes (persistent disk) have limited region availability.** Any local disk writes should be treated as ephemeral. All persistent data must go to Postgres or an external object store; Railway volumes are not yet a safe assumption at Hobby tier.
-- **Railway CLI on Windows has two install paths.** `npm install -g @railway/cli` (requires Node) and a standalone binary installer. The binary installer path is not the first option shown in the docs. This can cause a 15-minute Node install detour on first setup on Windows.
+- **Railway CLI on Windows has one working install path: `npm install -g @railway/cli`.** The `winget` package `Railway.RailwayCLI` does not exist in the winget registry — the command completes without error but installs nothing, and `railway --version` will fail. Confirmed on 2026-06-07: install via npm, ensure Node.js 16+ is present first.
 
 ## Operational Story
 
@@ -100,17 +100,18 @@ The root assumption was that Railway's "it just works" positioning would hold un
 | `DATABASE_URL` format mismatch in Go DSN parsing | Unknown unknowns | M | H | Use `pgx/v5` with `pgx.ParseConfig(os.Getenv("DATABASE_URL"))` from day 1; test connection string locally before first deploy |
 | Volume / local disk assumed persistent — data loss | Unknown unknowns | M | H | Treat Railway filesystem as ephemeral; all recipe images and uploads go to Cloudflare R2 or AWS S3 |
 | Remote MCP OAuth fails in headless CI environment | Unknown unknowns | L | L | Use Railway CLI local MCP (`railway mcp`) in CI; reserve remote MCP for interactive Claude Code sessions |
-| CLI install friction on Windows (Node.js dependency) | Devil's advocate | M | L | Use Railway's standalone binary installer (`winget install Railway.RailwayCLI`); document in AGENTS.md |
+| CLI install friction on Windows (Node.js dependency) | Devil's advocate | M | L | Install via `npm install -g @railway/cli` — winget package does not exist. Ensure Node.js 16+ is present. Documented in AGENTS.md. |
 | Migration rollback not automatic — schema drift under incident | Pre-mortem | M | H | Use `golang-migrate` with numbered migrations; test `migrate down N` before each deploy to staging |
 
 ## Getting Started
 
 1. **Install Railway CLI (Windows):**
-   Use the standalone binary installer to avoid the Node.js dependency:
    ```powershell
-   winget install Railway.RailwayCLI
+   npm install -g @railway/cli
    ```
-   Verify: `railway --version`
+   Verify: `railway --version` (expected: `railway 5.x.x`)
+
+   **Note:** `winget install Railway.RailwayCLI` does not work — that package does not exist in the winget registry. Node.js 16+ is required. If Node.js is not installed, get it from https://nodejs.org first.
 
 2. **Authenticate and link the project:**
    ```bash
