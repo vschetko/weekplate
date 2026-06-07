@@ -33,3 +33,9 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# 10x files
+/context
+
+# Claude folder
+.claude/
