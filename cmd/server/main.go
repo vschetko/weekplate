@@ -13,12 +13,16 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
+	"github.com/vschetko/weekplate/internal/db"
 )
 
 //go:embed static/index.html
 var indexHTML []byte
 
 func main() {
+	_ = godotenv.Load() // load .env if present; ignore error when absent
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -37,6 +41,7 @@ func main() {
 		} else {
 			log.Println("database connection established")
 			defer pool.Close()
+			db.MustMigrate(dbURL)
 		}
 	} else {
 		log.Println("warn: DATABASE_URL not set — running without database")

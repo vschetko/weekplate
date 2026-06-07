@@ -1,0 +1,11 @@
+DROP TABLE IF EXISTS grocery_items;
+DROP TABLE IF EXISTS plan_meals;
+DROP TABLE IF EXISTS meal_plans;
+DROP TABLE IF EXISTS recipe_ingredients;
+DROP TABLE IF EXISTS recipes;
+DROP TABLE IF EXISTS ingredient_tags;
+DROP TABLE IF EXISTS ingredients;
+DROP TABLE IF EXISTS user_exclusions;
+DROP TABLE IF EXISTS user_preferences;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS food_tags;
