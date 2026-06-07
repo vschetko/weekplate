@@ -45,7 +45,10 @@ CREATE TABLE ingredient_tags (
 CREATE TABLE recipes (
     id                   SERIAL PRIMARY KEY,
     name                 TEXT NOT NULL,
-    calories_per_serving INT  NOT NULL
+    calories_per_serving INT  NOT NULL,
+    description          TEXT NOT NULL DEFAULT '',
+    cooking_instruction  TEXT NOT NULL DEFAULT '',
+    cook_time_minutes    INT  NOT NULL DEFAULT 0
 );
 
 -- Per-recipe ingredient quantities (stored in canonical_unit)
